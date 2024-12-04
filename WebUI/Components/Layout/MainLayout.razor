@@ -1,0 +1,28 @@
+﻿@inherits LayoutComponentBase
+
+<BreezeMainLayoutTemplate>
+    <InnerTemplate>
+        <AuthorizeView>
+            <SidebarTemplate>
+                <SidebarBrandTemplate>
+                    <Brand/>
+                </SidebarBrandTemplate>
+                <SidebarContentTemplate>
+                    <Content/>
+                </SidebarContentTemplate>
+            </SidebarTemplate>
+        </AuthorizeView>
+        <NavbarTemplate Theme="@NavbarTheme.Dark()">
+            <BodyTemplate>
+                @Body
+            </BodyTemplate>
+            <NavItemEndTemplate>
+                <NavItems></NavItems>
+            </NavItemEndTemplate>
+            <NavOnMobileScreenLogoTemplate>
+                <OnMobileScreenLogo/>
+            </NavOnMobileScreenLogoTemplate>
+
+        </NavbarTemplate>
+    </InnerTemplate>
+</BreezeMainLayoutTemplate>

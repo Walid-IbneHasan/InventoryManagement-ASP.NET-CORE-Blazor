@@ -1,0 +1,93 @@
+﻿@page "/administration/account/user-management-activity-log"
+@rendermode InteractiveServer
+<PageTitle >Activity Logger</PageTitle>
+
+<ThreeSectionsTemplate>
+    <Col9Template>
+        <AdminHomeHeader/>
+        <NetcodeHubBreadCrumb BreadCrumbs="BreadCrumbs" BackgroundColor="@BreadCrumbBackgroundColor.PrimarySubtle()"/>
+        <div class="row mt-2">
+            <div class="card shadow-lg">
+                <div class="card-body">
+                    @if(Activities!=null)
+                    {
+                        foreach(var group in Activities)
+                        {
+                            <MudTreeView T="string" Dense=true Hover=true>
+                                <MudTreeViewItem Icon="@Icons.Material.Filled.Event" Value="@group.Key.ToString("dd-mmmm-yyyy")" Class="text-warning">
+                                    @foreach(var item in group)
+                                    {
+                                        <MudTreeViewItem Icon="@Icons.Material.Filled.VerifiedUser" Value="@($"Operation Title:{item.Title}")" Class="text-success">
+                                            <MudTreeViewItem Icon="@Icons.Material.Filled.EventNote" Value=@($"Operation Description:{item.Description}")" Class="text-dark"/>
+
+                                            <MudDivider/>
+                                            <MudTreeViewItem Icon="@Icons.Material.Filled.SupervisorAccount" Value=@($"Executed By:{item.UserName}")" Class="text-warning"/>
+                                            <MudTreeViewItem Icon="@Icons.MarkChatRead.EventNote" Value=@($"Operation Description:{item.Description}")" Class="text-dark"/>
+                                            <MudDivider/>
+                                         
+
+                                    }
+                                </MudTreeViewItem>
+                            </MudTreeView>
+                        }
+                    }
+                </div>
+            </div>
+
+        </div>
+    </Col9Template>
+    <Col3Template>
+        <Banner/>
+        </Col3Template>
+        <FooterTemplate>
+            <Footer/>
+        </FooterTemplate>
+</ThreeSectionsTemplate>
+@code {
+    private Dictionary<string string>BreadCrumbs=new Dictionary<string,string>
+    {
+        {"Home","app/home"},
+        {"Activity Logos",null}
+    };
+    private HubConnetction hubConnection;
+private IEnumerable<IGrouping<DateTime,ActivityTrackerResponseDTO>> Activities=[];
+[Cascading Parameter] public Task<Authentication State>?UserAuthState{get;set;}
+ private async Task GetActivities()=>Activities= await accountService.GroupActivtiesByDateAsync
+    protected async override Task OnInitializedAsync()
+    {
+        if(!customAuthorizationService.CustomClaimChecker((await UserAuthState!).User,DefaultClaims.Manager))
+        NavManager.NavigateTo("Account/Access Denied");
+        homeGenericState.StateChanged+=StateButtonClicked;
+        await GetActivities();
+        hubConnection=netcodeHubConnectionService.GetHubConnection();
+        hubConnection.On<string>("Notify",async (clientId)=>
+        {
+           await CallWhenNotified();
+           });
+           if (hubConnection==null)
+           await hubConnection.StartAsync();                               
+    }
+    async Task CallWhenNotified()
+    {
+        await InvokeAsync(async ()=>
+        {
+           StateHasChanged();
+           await adminActiveOrderCountState.GetActiveOrdersCount();
+
+        });
+    }
+
+                                            void StateButtonClicked()
+                                            {
+                                                string admindOrderUrl="app/administration/products/orders";
+                                                if(homeGenericState.IsAdmin)
+                                            NavManager.NavigateTo($"{admindOrderUrl}/{homeGenericState.StateName}");
+                                            }
+
+                                            public void Dispose()=>
+                                            
+                                            homeGenericState.StateChanged-=StateButtonClicked;
+                                            
+                                            
+
+}

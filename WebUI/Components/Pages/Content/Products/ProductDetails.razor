@@ -1,0 +1,276 @@
+﻿@page "/app/products/details/{Id}"
+@rendermode InteractiveServer
+@attribute [Authorize(Policy="AdministrationPolicy")]
+<PageTitle Title="Product Details" />
+<ThreeSectionsTemplate>
+    <Col9Template>
+        <AdminHomeHeader/>
+        <NetcodeHubBreadCrumb BreadCrumbs="BreadCrumbs"BackgroundColor="@BackgroundColor.Secondary()"ActivatedColor="@Color.Dark()"/>
+        @if(Product.Id!=Guid.Empty)
+        {
+            <div class="row mt-3">
+                <div class="card border-1 shadow-lg">
+                    <div class="card-header bg-white d-flex justify-content-between">
+                        <i class="d-flex fs-4 mdi mdi-eye text-info float-start"></i>
+                        <span class="d-flex bi-text-center text-info fs-4"style="font-family:Georgia;letter-spacing:3px;">@Product.Name Details</span>
+                        <i class="d-flex mdi mdi-close text-danger fs-4 cursorStyle float-end"@onclick="Close"></i>
+                    </div>
+                    <div class="card-body">
+                        <div class="col-xl-12 col-md-6 stretch-card grid-margin grid-margin-sm-0 pb-sm-3">
+                            <div class="card">
+                                <div class="card-body px-3 py-4">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="color-card">
+                                            <p class="mb-0 color-card-head text-dark ">
+                                                Product Name
+                                            </p>
+                                            <h2 class="text-muted fs-6">
+                                                @Product.Name
+                                            </h2>
+                                        </div>
+                                        <i class="card-icon-indicator mdi mdi-chart-timeline bg-inverse-icon-danger">
+                                        </i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-12 col-md-6 stretch-card grid-margin grid-margin-sm-0 pb-sm-3">
+                            <div class="card ">
+                                <div class="card-body px-3 py-4">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="color-card">
+                                            <p class="mb-0 color-card-head text-dark ">
+                                                Product Description
+                                            </p>
+                                            <h2 class="text-muted fs-6">
+                                                @Product.Description
+                                            </h2>
+                                        </div>
+                                        <i class="card-icon-indicator mdi mdi-chart-timeline bg-inverse-icon-danger">
+                                        </i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-12 col-md-6 stretch-card grid-margin grid-margin-sm-0 pb-sm-3">
+                            <div class="card bg-secondary">
+                                <div class="card-body px-3 py-4">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="color-card">
+                                            <p class="mb-0 color-card-head text-dark ">
+                                                Date Added
+                                            </p>
+                                            <h2 class="text-muted fs-6">
+                                                @Product.DateAdded
+                                            </h2>
+                                        </div>
+                                        <i class="card-icon-indicator mdi mdi-chart-timeline bg-inverse-icon-danger">
+                                        </i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-12 col-md-6 stretch-card grid-margin grid-margin-sm-0 pb-sm-3">
+                            <div class="card bg-secondary">
+                                <div class="card-body px-3 py-4">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="color-card">
+                                            <p class="mb-0 color-card-head text-dark ">
+                                                Product ID
+                                            </p>
+                                            <h2 class="text-muted fs-6">
+                                                @Product.Id
+                                            </h2>
+                                        </div>
+                                        <i class="card-icon-indicator mdi mdi-chart-timeline bg-inverse-icon-danger">
+                                        </i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <GenericSpinnerButton ButtonClass="btn-info" Text="Loading Product..."/>
+        }
+    </Col9Template>
+    <Col3Template>
+        @if (Product.Id != Guid.Empty)
+        {
+            <div class="row">
+                <div class="col-xl-12 col-md-6 stretch-card grid-margin grid-margin-sm-0 pb-sm-3">
+                    <div class="card bg-warning">
+                        <div class="card-body px-3 py-4 bg-light text-dark">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="color-card text-dark d-flex justify-content-center">
+                                    @if(string.IsNullOrEmpty(Product.Base64Image))
+                                    {
+                                        <i class="mdi mdi-image-broken-variant fs-1 text-info"></i>
+                                    }
+                                    else
+                                    {
+                                        <img class="d-flex ml-5" src="@Product.Base64Image" height="100" alt="@Product.Name"/>
+                                    }
+                                </div>
+                                <i class="card-icon-indicator mdi mdi-image bg-inverse-icon-warning">
+                                </i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-12 col-md-6 stretch-card grid-margin grid-margin-sm-0 pb-sm-3">
+                    <div class="card bg-primary">
+                        <div class="card-body px-3 py-4">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="color-card">
+                                    <p class="mb-0 color-card-head text-dark ">
+                                        Serial Number
+                                    </p>
+                                    <h2 class="text-white fs-5">
+                                        @Product.SerialNumber
+                                    </h2>
+                                </div>
+                                <i class="card-icon-indicator mdi mdi-numeric-9-plus-box-multiple-outline  bg-inverse-icon-danger">
+                                </i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-12 col-md-6 stretch-card grid-margin grid-margin-sm-0 pb-sm-3">
+                    <div class="card bg-danger">
+                        <div class="card-body px-3 py-4">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="color-card">
+                                    <p class="mb-0 color-card-head text-dark ">
+                                        Category
+                                    </p>
+                                    <h2 class="text-muted fs-6">
+                                        @Product.Category.Name
+                                    </h2>
+                                </div>
+                                <i class="card-icon-indicator mdi mdi-cube-outline bg-inverse-icon-danger">
+                                </i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-12 col-md-6 stretch-card grid-margin grid-margin-sm-0 pb-sm-3">
+                    <div class="card bg-primary">
+                        <div class="card-body px-3 py-4">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="color-card">
+                                    <p class="mb-0 color-card-head text-dark ">
+                                        Location
+                                    </p>
+                                    <h2 class="text-muted fs-6">
+                                        @Product.Location.Name
+                                    </h2>
+                                </div>
+                                <i class="card-icon-indicator mdi mdi-chart-timeline bg-inverse-icon-danger">
+                                </i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-12 col-md-6 stretch-card grid-margin grid-margin-sm-0 pb-sm-3">
+                    <div class="card bg-success">
+                        <div class="card-body px-3 py-4">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="color-card">
+                                    <p class="mb-0 color-card-head text-dark ">
+                                        Price
+                                    </p>
+                                    <h2 class="text-muted fs-6">
+                                        @Product.Price
+                                    </h2>
+                                </div>
+                                <i class="card-icon-indicator mdi mdi-chart-timeline bg-inverse-icon-danger">
+                                </i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-12 col-md-6 stretch-card grid-margin grid-margin-sm-0 pb-sm-3">
+                    <div class="card bg-success bg-warning">
+                        <div class="card-body px-3 py-4">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="color-card">
+                                    <p class="mb-0 color-card-head text-dark ">
+                                        Quantity
+                                    </p>
+                                    <h2 class="text-muted fs-6">
+                                        @Product.Quantity
+                                    </h2>
+                                </div>
+                                <i class="card-icon-indicator mdi mdi-resize-bottom-right bg-inverse-icon-danger">
+                                </i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </Col3Template>
+</ThreeSectionsTemplate>
+@code {
+    private HubConnection? hubConnection;
+    private Dictionary<string, string> BreadCrumbs = new Dictionary<string, string>
+    {
+        {"Home","/app/home"},
+        {"Products","/app/products/manage"},
+        {"Product Details",null}
+    };
+    [Parameter] public string Id { get; set; } = string.Empty;
+    private GetProductResponseDTO Product { get; set; } = new();
+
+    protected async override Task OnParameterSetAsync()
+    {
+        homeGenericState.StateChanged += StateButtonClicked;
+        if(Guid.Parse(Id)==Guid.Empty)
+        {
+            GoToHome();
+        }
+        else
+        {
+            using var scope = serviceScopeFactory.CreateScope();
+            var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+            Product = await mediator.Send(new GetProductByIdQuery(Guid.Parse(Id)));
+        }
+    }
+    protected async override Task OnInitializedAsync()
+    {
+        hubConnection = netcodeHubConnectionService.GetHubConnection();
+        hubConnection = On<string>("Notify", async (clientId) =>
+        {
+            await CallWhenNotified();
+        });
+        if (hubConnection == null)
+        {
+            await hubConnection!.StartAsync();
+        }
+    }
+    async Task CallWhenNotified()
+    {
+        await InvokeAsync(async () =>
+        {
+            StateHasChanged();
+            await adminState.GetActiveOrdersCount();
+        });
+    }
+    void StateButtonClicked()
+    {
+        string adminOrderUrl = "app/administration/products/orders";
+        if (homeGenericHeaderState.IsAdmin)
+        {
+            NavManager.NavigateTo($"{adminOrderUrl}/{homeGenericState.StateName}")
+        }
+
+    }
+    void Close() => GoToHome();
+    void GoToHome() => NavManager.NavigateTo("/app/products/manage");
+    void Dispose() => homeGenericState.StateChanged -= StateButtonClicked;
+}

@@ -1,0 +1,53 @@
+﻿@rendermode InteractiveServer
+@implements IDisposable
+
+<div class="page-header flex-wrap" style="margin-top:0rem">
+    <h3 class="mb-0">
+        Hi, welcome back! <span class="p-lg-0 h6 pl-sm-2 text-muted d-inline-block ">Your System Analytics Dashboard!</span>
+    </h3>
+    <div class="d-flex">
+        <button type="button" class="btn btn-sm btn-outline-warning btn-icon-text border-1 position-relative"onclick="(()=>homeGenericState.GetProcessingOrderButtonClicked(OrderState.Delivering,true))">
+            <i class="mdi md-sync btn-icon-prepend"></i>
+            Processing
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
+                @adminState.ProcessingCount <span class="visually-hidden">unread messages </span>
+            </span>
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-primary btn-icon-text border-1 position-relative" onclick="(()=>homeGenericState.GetProcessingOrderButtonClicked(OrderState.Delivered,true))">
+            <i class="mdi mdi-swim btn-icon-prepend"></i>
+            Delivering
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
+                @adminState.DeliveringCount
+                <span class="visually-hidden"> unread messages</span>
+            </span>
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-primary btn-icon-text border-1 position-relative" onclick="(()=>homeGenericState.GetProcessingOrderButtonClicked(OrderState.Cancelled,true))">
+            <i class="mdi mdi-swim btn-icon-prepend"></i>
+            Delivered
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">
+                @adminState.DeliveringCount
+                <span class="visually-hidden"> unread messages</span>
+            </span>
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-primary btn-icon-text border-1 position-relative" onclick="(()=>homeGenericState.GetProcessingOrderButtonClicked(OrderState.Delivering,true))">
+            <i class="mdi mdi-swim btn-icon-prepend"></i>
+            Cancelled
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                @adminState.DeliveringCount
+                <span class="visually-hidden"> unread messages</span>
+            </span>
+        </button>
+    </div>
+</div>
+@code {
+    public int Count { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        adminState.StateChanged += StateHasChanged;
+        await adminState.GetActiveOrdersCount();
+    }
+    public void Dispose()
+    {
+        adminState.StateChanged -= StateHasChanged;
+    }
+}

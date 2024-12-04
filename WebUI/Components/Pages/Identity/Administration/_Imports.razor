@@ -1,0 +1,28 @@
+﻿@using Application.DTO.Request.Products
+@using Application.Service
+@using Application.Service.Identity
+@using Application.Service.Products
+@using Domain.Entities.Products
+@using Microsoft.AspNetCore.Authorization
+@using NetcodeHub.Packages.Components.Toast
+@using WebUI.Components.Layout
+@using Application.DTO.Response.Identity
+@using Mapster
+@using MudBlazor
+@using Microsoft.AspNetCore.Components.Web
+@using NetcodeHub.Packages.UI.Templates.Breeze
+@using NetcodeHub.Packages.Components.Modal
+@using Application.DTO.Response.ActivityTracker
+@using System.Security.Claims
+@using Application.DTO.Request.ActivityTracker
+@using WebUI.Components.Pages.Content
+@using WebUI.Components.Pages.Identity.Administration
+@using NetcodeHub.Packages.Components.BreadCrumb
+@using Microsoft.AspNetCore.SignalR.Client
+@using WebUI.States.Administration
+@inject IAccountService accountService
+@inject GenericHomeHeaderState homeGenericState
+@inject AdminActiveOrderCountState adminActiveOrderCountState
+@layout MainLayout
+@attribute [Authorize(Policy="AdministrationPolicy")]
+

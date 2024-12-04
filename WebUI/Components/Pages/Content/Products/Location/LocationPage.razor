@@ -1,0 +1,316 @@
+﻿@page "/app/products/location/manage"
+@rendermode InteractiveServer
+@attribute [Authorize(Policy = "AdministrationPolicy")]
+<PageTitle> Locations</PageTitle>
+<ThreeSectionsTemplate>
+    <Col9Template>
+        <AdminHomeHeader />
+        <NetcodeHubBreadCrumb BreadCrumbs="BreadCrumbs" DeactivatedColor="@Color.Primary()" BackgroundColor="@BackgroundColor.Secondary()" ActivatedColor="@BreadCrumbColor.Danger()" />
+        <div class="row bg-danger py-2 mt-3" style="border-radius:20px">
+            <div class="col-lg-12 col-sm-12 col-md-12">
+                <div class="card border-1 shadow-lg table-responsive mb-2" style="border-radius:20px">
+                    <div class="card-header p-2">
+                        <button class="btn btn-outline-danger float-end">
+                            <i class="mdi mdi-plus"></i>Create Location
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <NetcodeHubDataGrid ContentBGColor="@Color.Primary()"
+                                            HeaderFont="@Font.TimesNewRoman()"
+                                            HeaderSize="@Size.Large()"
+                                            ContentFont="@Font.Georgia()"
+                                            DataGridFormat="@DataGridFormat.Striped()"
+                                            HeaderBGColor="@Color.Danger()">
+                            <HeaderTemplate>
+                                <tr>
+                                    <th>Serial No</th>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th><span id="manageHeader" style="display:none;">Manage</span></th>
+                                </tr>
+                            </HeaderTemplate>
+                            <ContentTemplate>
+                                @if (Locations == null)
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center mb-2">
+                                            <span>No Data Found</span>
+                                        </td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    var listData = Locations.Skip(SkipValue).Take(TakeValue).ToList();
+                                    int sn = 1;
+                                    @foreach (var item in listData)
+                                    {
+                                        string id = item.Id.ToString();
+                                        <tr @onmouseover="()=>ToggleIcons(id,true)" @onmouseout="()=>ToggleIcons(id,false)" id="td_@item.id">
+                                            <td>@sn</td>
+                                            <td id="td1_@item.Id">@item.Id</td>
+                                            <td id="td2_@item.Id">@item.Name</td>
+                                            <td>
+                                                <i @onmouseover="()=>ToggleEditIcon(id,true)" id="editIcon_@item.Id" @onclick="(()=>EditClicked(item))" class="mdi mdi-grease-pencil text-info cursorStyle" style="display:none;"></i>
+                                                @if (CanDelete)
+                                                {
+                                                    <i id="separatorIcon_@item.Id" class="mdi mdi-dots-vertical text-primary" style="displayLnone;"></i>
+                                                    <i @onmouseover="()=>ToggleDeleteIcon(id,true)" @onmouseout="()=>ToggleDeleteIcon(id,false)" id="deleteIcon_@item.Id" class="mdi mdi-delete text-danger cursorStyle" style="display:none;"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i id="separatorIcon_@item.Id" class="mdi mdi-dots-vertical text-primary" style="displayLnone;"></i>
+                                                    <i @onmouseover="()=>ToggleDeleteIcon(id,true)" @onmouseout="()=>ToggleDeleteIcon(id,false)" id="deleteIcon_@item.Id" class="mdi mdi-delete text-secondary" style="display:none;"></i>
+                                                }
+                                            </td>
+                                        </tr>
+                                        {
+                                            sn++;
+                                        }
+                                    }
+                                }
+                                @if (Loading)
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center mb-2">
+                                            <div class="spinner-border text-primary " role="status" style="z-index:99">
+                                                <span class="visually-hidden">Processing...</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                }
+                            </ContentTemplate>
+
+                        </NetcodeHubDataGrid>
+                    </div>
+                    <div class="card-footer">
+                        <SfPager @ref="@Page" PageSize=10 NumericItemsCount=4 TotalItemsCount=Locations.Count() ItemClick="Click" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Col9Template>
+    <Col3Template>
+        <Banner />
+    </Col3Template>
+    <FooterTemplate><Footer /></FooterTemplate>
+</ThreeSectionsTemplate>
+<Confirmation Action="Confirm" BoostrapClass="bg-danger shadow-lg border-1 card-header" @ref="confirmation" Instruction="Are you ... " />
+<NetcodeHubToast @ref="ToastComponent" />
+<Modal @bind-Open="IsOpen"
+       BootstrapClass="border-danger rounded p-2 ml-2"
+       CustomStyle="position:relative; left:40vw; right:40w; top:30vh">
+
+    <ContentContent>
+        <div class="card border-1 shadow-sm">
+            <div class="card-header">
+                <span class="text-center text-danger fw-bold ">@ModalTitle</span>
+                <i class="mdi mdi-close text-danger fw-bold float-end fs-4 cursorStyle" @onclick="CloseModal"></i>
+            </div>
+            <div class="card-body">
+                <EditForm Model="LocationModel" OnValidSubmit="SaveLocation">
+                    <DataAnnotationsValidator />
+                    <div class="form-group">
+                        <FloatingText Label="Location Name" @bind-Value="LocationModel.Name" class="form-control" />
+                    </div>
+                    <div class="form-group mt-3 mb-3">
+                        @if (Loading)
+                        {
+                            <GenericSpinnerButton ButtonClass="btn btn-danger" Text="Saving..." />
+                        }
+                        else
+                        {
+                            <button class="btn btn-danger float-end" type="submit">Save</button>
+                        }
+                    </div>
+                    <ValidationSummary />
+                </EditForm>
+            </div>
+        </div>
+    </ContentContent>
+
+</Modal>
+
+@code {
+    private Dictionary<string, string> BreadCrumbs = new Dictionary<string, string>
+    {
+        {"Home","/app/home"},
+        {"Manager Locations",null }
+    };
+
+    string ModalTitle = "Create New Location";
+    SfPager? Page;
+    NetcodeHubToast? ToastComponent;
+    public bool Loading { get; set; } = false;
+    public bool IsOpen { get; set; }
+    Confirmation? confirmation;
+    public int SkipValue;
+    public int TakeValue = 10;
+    [CascadingParameter] public Task<AuthenticationState>? UserAuthState { get; set; }
+    private IEnumerable<GetLocationResponseDTO> Locations { get; set; } = [];
+    private IEnumerable<GetProductResponseDTO> Pros { get; set; } = [];
+    private AddLocationRequestDTO LocationModel = new();
+    ClaimsPrincipal? User;
+    private HubConnection? hubConnection;
+    bool CanDelete = false;
+    protected async override Task OnInitializedAsync()
+    {
+        User = (await UserAuthState!).User;
+        CanDelete = customAuthorizationService.CustomClaimChecker(User, DefaultClaims.Delete);
+        homeGenericState.StateChanged += StateButtonClicked;
+        await GetLocations();
+
+        hubConnection = netcodeHubConnectionService.GetHubConnection();
+        hubConnection.On<string>("Notify", async (clientId) =>
+        {
+            await CallWhenNotified();
+        });
+        if (hubConnection == null)
+        {
+            await hubConnection.StartAsync();
+        }
+    }
+    async Task CallWhenNotified()
+    {
+        await InvokeAsync(async () =>
+        {
+            StateHasChanged();
+            await adminState.GetActiveOrdersCount();
+        });
+    }
+
+    void StateButtonClicked()
+    {
+        string adminOrderUrl = "app/administration/products/orders";
+        if (homeGenericState.IsAdmin)
+        {
+            NavigationManager.NavigateTo($"{adminOrderUrl}/{homeGenericState.StateName}");
+
+        }
+    }
+    private async Task GetLocations()
+    {
+        Loading = true;
+        using var scope = serviceProvider.CreateScope();
+        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+        Locations = await mediator.Send(new GetAllLocationsQuery());
+        Loading = false;
+    }
+
+    private async Task ToggleIcons(string itemId = null!, bool isHovering = false) => await js.InvokeVoidAsync("ToggleIcons", itemId, isHovering);
+    private async Task ToggleEditIcons(string itemId, bool isHovering = false) => await js.InvokeVoidAsync("ToggleEditIcons", itemId, isHovering);
+    private async Task ToggleDeleteIcons(string itemId, bool isHovering = false) => await js.InvokeVoidAsync("ToggleDeleteIcons", itemId, isHovering);
+    void OpenModal() => IsOpen = true;
+    void CreateLocationBtnClicked()
+    {
+        ModalTitle = "Create New Location";
+        OpenModal();
+
+    }
+    void CloseModal() => IsOpen = false;
+
+    async Task SaveLocation()
+    {
+        Loading = true;
+        await Task.Delay(2000);
+        ServiceResponse response = new(false, null);
+        if (IdHolder != Guid.Empty)
+        {
+            var update = LocationModel.Adapt(new UpdateLocationRequestDTO());
+            using var scope = serviceProvider.CreateScope();
+            var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+            response = await mediator.Send(new UpdateLocationCommand(update));
+            await accountService.SaveActivityAsync(new ActivityTrackerRequestDTO()
+                {
+                    UserId = User!.Claims.FirstOrDefault(_ => _.Type == ClaimTypes.NameIdentifier)!.Value.ToString(),
+                    Title = "Update Location Method Called",
+                    Description = response.Message,
+                    OperationState = response.Flag,
+                    Date = DateTime.Now.Date
+                });
+        }
+        else
+        {
+
+            using var scope = serviceProvider.CreateScope();
+            var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+            response = await mediator.Send(new CreateLocationCommand(LocationModel));
+            await accountService.SaveActivityAsync(new ActivityTrackerRequestDTO()
+                {
+                    UserId = User!.Claims.FirstOrDefault(_ => _.Type == ClaimTypes.NameIdentifier)!.Value.ToString(),
+                    Title = "Create Location Method Called",
+                    Description = response.Message,
+                    OperationState = response.Flag,
+                    Date = DateTime.Now.Date
+                });
+        }
+        if (response.Flag)
+        {
+            await GetLocations();
+            await ToastComponent!.ShowSuccessToast("Info", response.Message);
+            LocationModel = new();
+            CloseModal();
+        }
+        else
+        {
+            await ToastComponent!.ShowErrorToast("Alert", response.Message);
+        }
+        Loading = false;
+    }
+
+    public void Click(PagerItemClickEventArgs args)
+    {
+        SkipValue = (args.CurrentPage * Page!.PageSize) - Page.PageSize;
+        TakeValue = Page.PageSize;
+    }
+
+    public Guid IdHolder { get; set; }
+
+    void EditClicked(GetLocationResponseDTO location)
+    {
+        ModalTitle = "Update Location";
+        IdHolder = location.Id;
+        location.Adapt(LocationModel);
+        OpenModal();
+    }
+    void DeleteClicked(GetLocationResponseDTO location)
+    {
+
+        IdHolder = location.Id;
+        location.Adapt(LocationModel);
+        confirmation.Show();
+    }
+
+    async Task Confirm()
+    {
+        Loading = true;
+        await Task.Delay(2000);
+
+        using var scope = serviceProvider.CreateScope();
+        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+        var result = await mediator.Send(new DeleteLocationCommand(IdHolder));
+        await accountService.SaveActivityAsync(new ActivityTrackerRequestDTO()
+            {
+                UserId = User!.Claims.FirstOrDefault(_ => _.Type == ClaimTypes.NameIdentifier)!.Value.ToString(),
+                Title = "Delete Location Method Called",
+                Description = result.Message,
+                OperationState = result.Flag,
+                Date = DateTime.Now.Date
+            });
+        if (result.Flag)
+        {
+            await GetLocations();
+            await ToastComponent!.ShowSuccessToast("Info", result.Message);
+            LocationModel = new();
+            IdHolder = Guid.Empty;
+        }
+        else
+        {
+            await ToastComponent!.ShowErrorToast("Alert", result.Message);
+        }
+        Loading = false;
+    }
+
+    public void Dispose() => homeGenericState.StateChanged -= StateButtonClicked;
+
+}

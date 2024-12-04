@@ -1,0 +1,514 @@
+﻿@page "/app/administration/products/orders"
+@page "/app/administration/products/orders/{OrderStateParam}"
+@rendermode InteractiveServer
+@implements IDisposable
+
+<PageTitle>
+    Products
+</PageTitle>
+<TwoSectionsTemplate>
+    <Col12Template>
+        <AdminHomeHeader />
+        <NetcodeHubBreadCrumb BreadCrumbs="BreadCrumbs" DeactivatedColor="@Color.Primary()" BackgroundColor="@BackgroundColor.Secondary()" ActivatedColor="@Color.Dark()"/>
+        <div class="row bg-success py-2 mt-3" style="border-radius:20px">
+            <div class="col-lg-12 col-sm-12 col-md-12">
+                <div class="card border-1 shadow-lg" style="border-radius:20px">
+                    <div class="card-header text-center">
+
+                        <i class="mdi mdi-sync fs-2 float-start text-success"></i> 
+                        <h4 class="text-success">Manage Product Orders</h4>
+
+                    </div>
+                    <div class="card-body border-1 border-success">
+                        <div class="mb-1">
+                            <input type="search" class="form-control float-end w-25 mb-1 p-2 border-success " placeholder="Search client,products,state,serial numbers..." />
+
+                        </div>
+                        <SfGrid DataSource="@PermanentOrders" AllowPaging="true" AllowSorting="true" AllowExcelExport="true" style="margin-top:35px;"
+                        AllowGrouping=true AllowPdfExport=true Toolbar="ToolbarItems" AllowSelection=true AllowResizing=true @ref="DefaultGrid">
+                            <GridPageSettings PageSize="6"></GridPageSettings>
+                            <GridSelectionSettings Type="SelectionType.Single" Mode="SelectionMode.Multiple"></GridSelectionSettings>
+                            <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="GetProductResponseDTO" RowSelected="RowSelectHandler"></GridEvents>
+                            <GridColumns>
+                                <GridColumn HeaderText="Image" AllowFiltering=false>
+                                    <Template>
+                                        @{
+                                            var product = (context as GetOrderResponseDTO);
+                                            <div class="image">
+                                                <img src="@(product!.ProductImage)" alt="@product.ProductName" width="70" height="50" />
+
+                                            </div>
+                                        }
+                                    </Template>
+                                </GridColumn>
+                                <GridColumn Field=@nameof(GetOrderResponseDTO.ClientName) HeaderText="Client Name" ></GridColumn>"
+                                <GridColumn Field=@nameof(GetOrderResponseDTO.OrderedDate) HeaderText="Date Ordered" Format="d" Type="ColumnType.DateTime"></GridColumn>
+                                <GridColumn Field=@nameof(GetOrderResponseDTO.DeliveringDate) HeaderText="Delivering Date"Format="d" Type="ColumnType.DateTime"></GridColumn>
+                                <GridColumn Field=@nameof(GetOrderResponseDTO.ProductName) HeaderText="Product Name" ></GridColumn>
+                                <GridColumn Field=@nameof(GetOrderResponseDTO.SerialNumber) HeaderText="Serial No"></GridColumn>
+                                <GridColumn Field=@nameof(GetOrderResponseDTO.Quantity) HeaderText="Quantity" Type="ColumnType.Integer"></GridColumn>
+                                <GridColumn Field=@nameof(GetOrderResponseDTO.Price) HeaderText="Price" Format="C2" Type="ColumnType.Decimal"></GridColumn>
+                                <GridColumn Field=@nameof(GetOrderResponseDTO.TotalAmount) HeaderText="Total" Format="C2" Type="ColumnType.Decimal"></GridColumn>
+                                <GridColumn HeaderText="State" >
+                                    <Template>
+                                        @{
+                                            var order = (context as GetOrderResponseDTO);
+                                            <div class="d-flex justify-content-between">
+                                                @if(order!.State.Equals(OrderState.Processing))
+                                                {
+                                                    <button type="button" class="btn btn-warning btn-sm border-0" style="cursor:default">
+                                                        @order!.State
+                                                    </button>
+                                                }
+                                                else if (order!.State.Equals(OrderState.Delivered))
+                                                {
+                                                    <button type="button" class="btn btn-success btn-sm border-0" style="cursor:default">
+                                                        @order!.State
+                                                    </button>
+                                                }
+                                                else if (order!.State.Equals(OrderState.Cancelled))
+                                                {
+                                                    <button type="button" class="btn btn-danger btn-sm border-0" style="cursor:default">
+                                                        @order!.State
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <button type="button" class="btn btn-danger btn-sm border-0" style="cursor:default">
+                                                        @order!.State
+                                                    </button>
+                                                }
+                                            </div>
+                                        }
+                                    </Template>
+                                </GridColumn> 
+                            </GridColumns>
+                        </SfGrid>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <Modal @bind-Open="IsOpen" BootstrapClass="border-success rounded p-2 ml-2" CustomStyle="@ModalCustomStyle">
+            <ContentContent>
+                @if (ShowUpdateOrderPage)
+                {
+                    <div class="card border-1 shadow-sm">
+                        <div class="card-header">
+                            <i class="mdi mdi-sync text-success fs-4 px-3 menu-icon text-start"></i>
+                            <span class="text-center text-success fw-bold">Update Order</span>
+                            <i class="mdi mdi-close text-success fw-bold float-end fs-4 cursorStyle" @onclick="CloseModal"></i>
+                        </div>
+                        <div class="card-body">
+                            <EditForm Model="UpdateOrderModel" OnValidSubmit="Save" Enhance>
+                                <DataAnnotationsValidator />
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        Select State
+                                    </label>
+                                    <select class="form-select mb-3 w-100" @onchange="OrderStateSelectionChanged">
+                                        @if(OrderStates!=null)
+                                        {
+                                            string state = OrderStates.FirstOrDefault(_ => _.Equals(UpdateOrderModel!.OrderState, StringComparison.OrdinalIgnoreCase))!;
+                                            @if(string.IsNullOrEmpty(state))
+                                            {
+                                                <option value="@OrderState.Cancelled">@OrderState.Cancelled</option>
+                                            }
+
+                                            foreach(var item in OrderStates)
+                                            {
+                                                if (!string.IsNullOrEmpty(state) && state.Equals(item) || item.Equals(OrderState.Cancelled, StringComparison.OrdinalIgnoreCase)) ;
+                                                {
+                                                    <option selected value="@item">@item</option>
+                                                }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                else
+                                                {
+                                                    <option value="@item">@item</option>
+                                                }
+                                            }
+                                        }
+                                    </select>
+
+                                </div>
+                                <div class="form-group mt-3">
+                                    <label class="form-label">Select Delivery Data</label>
+                                    <InputDate @bind-Value="UpdateOrderModel!.DeliveringDate"class="form-control"></InputDate>
+
+                                </div>
+                                <div class="form-group mt-3">
+                                    @if(Loading)
+                                    {
+                                        <GenericSpinnerButton Text="@Text" ButtonClass="btn btn-danger"/>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit" class="btn btn-success float-end">
+                                            <i class="mdi mdi-sync"></i>Update Order
+                                        </button>
+                                    }
+                                </div>
+                                <div class="form-group mt-2">
+                                    @if(Errors!="")
+                                    {
+                                        @Errors
+                                    }
+                                    else
+                                    {
+                                        <ValidationSummary style="list-style:circle"/>
+                                    }
+                                </div>
+
+
+                            </EditForm>
+
+                        </div>
+                    </div>
+                }
+                @if (ShowOtherPage)
+                {
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between">
+                            <i class="d-flex @OtherModelHeaderIcon text-@CssClass fs-4 px-3 menu-icon text-start"></i>
+                            <span class="d-flex text-center text-@CssClass fw-bold ">@OtherModalTitle</span>
+                            <i class="d-flex mdi mdi-close text-@CssClass fw-bold float-end fs-4 cursorStyle" @onclick="CloseModal"></i>
+                        </div>
+                        <div class="card-body ">@OtherModalMessage</div>
+                        <div class="card-footer">
+                            @if (Loading)
+                            {
+                                <GenericSpinnerButton Text="@Text" ButtonClass="btn btn-danger" />
+                            }
+                            else
+                            {
+                                <button class="btn btn-@CssClass float-end " type="button" @onclick="OtherModalButtonClicked">
+                                    <i class="mdi mdi-radio"></i>
+                                    @OtherModalButtonText
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+            </ContentContent>
+        </Modal>
+    </Col12Template>
+    <FooterTemplate>
+        <Footer />
+    </FooterTemplate>
+</TwoSectionsTemplate>
+
+<NetcodeHubToast @ref="ToastComponent"  Duration="@Duration"/>
+
+@code {
+    private Dictionary<string, string> BreadCrumbs = new Dictionary<string, string>
+    {
+        {"Home","/app/home"},
+        {"Products","app/products/manage" },
+        {"Manage Orders",null }
+    };
+
+    private SfGrid<GetOrderResponseDTO> DefaultGrid;
+    NetcodeHubToast? ToastComponent;
+    string ModalCustomStyle = string.Empty;
+    string Search = string.Empty;
+    string Errors = "";
+    private bool ShowUpdateOrderPage;
+    private bool ShowOtherPage;
+    private string? OtherModalTitle { get; set; }
+    private string? OtherModalMessage { get; set; }
+    private string? OtherModalIcon { get; set; }
+    private string? OtherModalButtonText { get; set; }
+    private string? OtherModelHeaderIcon { get; set; }
+    private string? CssClass { get; set; }
+    private string Text = "Loading...";
+
+    private List<ItemModel> Toolbaritems = new List<ItemModel>();
+
+
+    public bool Loading { get; set; } = false;
+    public int Duration { get; set; } = 3000;
+    public bool IsOpen { get; set; }
+
+
+
+
+    [CascadingParameter] public Task<AuthenticationState>? UserAuthState { get; set; }
+    private IEnumerable<GetOrderResponseDTO> TemporalOrders { get; set; } = [];
+    private IEnumerable<GetOrderResponseDTO> PermanentOrders { get; set; } = [];
+    private UpdateClientOrderRequestDTO UpdateOrderModel = new();
+
+    [Parameter] public string? OrderStateParam { get; set; }    
+
+    ClaimsPrincipal? User;
+    private HubConnection? hubConnection;
+
+    protected async override Task OnInitializedAsync()
+    {
+
+        homeGenericState.StateChanged += StateButtonClicked;
+        Loading=true;
+        await GetUserIdentity();
+        await GetOrders();
+        LoadToolbarItems();
+        Loading = false;
+
+        hubConnection = netcodeHubConnectionService.GetHubConnection();
+        hubConnection.On<string>("Notify", async (clientId) =>
+        {
+            await CallWhenNotified();
+        });
+        if (hubConnection == null)
+        {
+            await hubConnection.StartAsync();
+        }
+    }
+    async Task CallWhenNotified()
+    {
+        await GetOrders();
+        await InvokeAsync(async () =>
+        {
+            StateHasChanged();
+            await adminState.GetActiveOrdersCount();
+        });
+    }
+
+    protected override void Task OnParametersSet()
+    {
+        if (string.IsNullOrEmpty(OrderStateParam) || !homeGenericState.IsAdmin)
+            return;
+        else
+            StateGeneralMethod();
+    }
+
+    void StateButtonClicked()
+    {
+        OrderStateParam = string.Empty;
+        var updateUrlTask = Task.Run(async () => await js.InvokeVoidAsync("update url", "app/administration/products/orders"));
+        string adminOrderUrl = "app/administration/products/orders";
+        if (homeGenericState.IsAdmin)
+            StateGeneralMethod();
+    }
+
+
+    void StateGeneralMethood()
+    {
+
+        string state = homeGenericState.StateName;
+        bool isAdmin = homeGenericState.IsAdmin;
+        PermanentOrders = TemporalOrders.Where(_ => _.State.Equals(state, StringComparison.OrdinalIgnoreCase)).ToList();
+        StateHasChanged();
+    }
+
+    async Task ToolbarClickHandler(Syncfusion.Blazor.Navigation.ClickEventArgs args)
+    {
+        if (args.Item.Text.ToLower() == "excel")
+            await this.DefaultGrid!.ExportToExcelAsync();
+        else if (args.Item.Text.ToLower() == "pdf")
+            await this.DefaultGrid!.ExportToPdfAsync();
+        else if(args.Item.Text.ToLower()=="print")
+            await this.DefaultGrid!.PrintAsync();
+        else if(args.Item.Text.ToLower()=="delete")
+        {
+            if(await CheckIfRowSelected())
+            {
+                ResetModalDisplay();
+                ModalCustomStyle = "position:relative;left:40vw;right:30vw;top:45vh;";
+                OtherModalTitle = "Confirm Order Cancellation";
+                OtherModalButtonText = "Cancel Order";
+                OtherModalIcon = "mdi mdi-close text-danger";
+                OtherModalMessage = "Are you sure you want to delete this order?";
+                OtherModelHeaderIcon = "mdi mdi-shield";
+                CssClass = "danger";
+                ShowOtherPage=true;
+                OpenModal();
+            }
+        }
+        else if(args.Item.Text.Equals("update order",StringComparison.OrdinalIgnoreCase))
+        {
+            if(await CheckIfRowSelected())
+            {
+                ResetModalDisplay();
+                ModalCustomStyle = "position:relative;left:40vw;;top:45vh;min-width:280px;";
+                ShowUpdateOrderPage = true;
+                OpenModal();
+            }
+        }
+    }
+
+
+    async Task OtherModalButtonClicked()
+    {
+        if(SelectedOrder.Id==Guid.Empty)
+        {
+            ShowUpdateOrderPage = true;
+            ShowOtherPage = false;
+            return;
+        }
+        if(SelectedOrder.State.Equals(OrderState.Cancelled,StringComparison.OrdinalIgnoreCase))
+        {
+            await ToastComponent!.ShowErrorToast("Alert","Order already cancelled")
+            CloseModal();
+            return;
+        }
+        if(SelectedOrder.State.Equals(OrderState.Delivered,StringComparison.OrdinalIgnoreCase))
+        {
+            await ToastComponent!.ShowErrorToast("Alert", "Order already delivered")
+            CloseModal();
+            return;
+
+        }
+
+        Text = "Cancelling Order...";
+        Loading = true;
+        await Task.Delay(3000);
+        using var scope = serviceProvider.CreateScope();
+        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+        var response = await mediator.Send(new CancelOrderCommand(SelectedOrder.Id));
+        await accountService.SaveActivityAsync(new ActivityTrackerRequestDTO()
+            {
+                UserId = User!.Claims.FirstOrDefault(_ => _.Type == ClaimTypes.NameIdentifier)!.Value.ToString(),
+                Title = "Cancel Order Method Called",
+                Description = response.Message,
+                OperationState = response.Flag,
+                Date = DateTime.Now.Date
+            });
+        Loading = false;
+        if(response.Flag)
+        {
+            await hubConnection!.SendAsync("Notification","dummyId");
+            await adminState.GetActiveOrdersCount();
+            CloseModal();
+            await GetOrders();
+            await ToastComponent!.ShowSuccessToast("Info", response.Message);
+        }
+        else
+        {
+            await ToastComponent!.ShowErrorToast("Alert", response.Message);
+        }
+    }
+
+    async Task<bool>CheckIfRowSelected()
+    {
+        if(SelectedOrder.Id==Guid.Empty)
+        {
+            Duration = 2000;
+            await ToastComponent!.ShowErrorToast("Alert", "No order selected");
+            return false;
+        }
+        return true;
+    }
+
+    private GetOrderResponseDTO SelectedOrder = new();
+
+    public void RowSelectHandler(RowSelectEventArgs<GetOrderResponseDTO>args)
+    {
+        SelectedOrder = args.Data;
+        UpdateOrderModel!.OrderId = SelectedOrder.Id;
+        UpdateOrderModel!.DeliveringDate = SelectedOrder.DeliveringDate;
+        UpdateOrderModel!.OrderState = SelectedOrder.State;
+    }
+
+
+    void SearchOrder(Microsoft.AspNetCore.Components.ChangeEventArgs e)
+    {
+        try
+        {
+            string trimFilter = e.Value!.ToString()!.Trim();
+            PermanentOrders = TemporalOrders
+            .Where(_ => _.ProductName.Contains(trimFilter, StringComparison.OrdinalIgnoreCase)
+            || _.SerialNumber.Contains(trimFilter, StringComparison.OrdinalIgnoreCase)
+            || _.ClientName.Contains(trimFilter, StringComparison.OrdinalIgnoreCase)
+            || _.State.Contains(trimFilter, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        }
+        catch ()
+        {
+            PermanentOrders = null;
+        }
+    }
+
+    private void ResetModalDisplay()
+    {
+        ShowUpdateOrderPage = false;
+        ShowOtherPage = false;
+        OtherModalTitle = string.Empty;
+        OtherModalMessage = string.Empty;
+        OtherModalIcon = string.Empty;
+        OtherModalButtonText = string.Empty;
+        ModalCustomStyle = string.Empty;
+        ModalCustomStyle = string.Empty;
+    }
+
+    void LoadToolbarItems()
+    {
+        Toolbaritems.Add(new ItemModel() { Text = "Cancel Order", TooltipText = "Cancel Order", PrefixIcon = "e-close" });
+        Toolbaritems.Add(new ItemModel() { Text = "Update Order", TooltipText = "Update Order", PrefixIcon = "e-update" });
+        Toolbaritems.Add(new ItemModel() { Text = "PDF", TooltipText = "Export to PDF", PrefixIcon = "e-icons e-export-pdf" });
+        Toolbaritems.Add(new ItemModel() { Text = "Excel", TooltipText = "Export to Excel", PrefixIcon = "e-icons e-excel-xls" });
+        Toolbaritems.Add(new ItemModel() { Text = "Print", TooltipText = "Print", PrefixIcon = " e-print" });
+
+    }
+
+    private async Task GetUserIdentity()
+    {
+        try
+        {
+            User = (await UserAuthState!).User;
+        }
+        catch
+        {
+
+        }
+    }
+
+    void OpenModal() => IsOpen = true;
+    void CloseModal() => IsOpen = false;
+
+    async Task Save()
+    {
+        Text = "Responding to Order...";
+        Loading = true;
+        await Task.Delay(3000);
+
+        using var scope = serviceProvider.CreateScope();
+        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+        var response = await mediator.Send(new UpdateClientOrderCommand(UpdateOrderModel));
+        await accountService.SaveActivityAsync(new ActivityTrackerRequestDTO()
+            {
+                UserId = User!.Claims.FirstOrDefault(_ => _.Type == ClaimTypes.NameIdentifier)!.Value.ToString(),
+                Title = "Update Order Method Called",
+                Description = response.Message,
+                OperationState = response.Flag,
+                Date = DateTime.Now.Date
+            });
+        Loading = false;
+        StateHasChanged();
+
+        if(response.Flag)
+        {
+            await hubConnection!.SendAsync("Notification", "dummyId");
+            CloseModal();
+            await GetOrders();
+            await ToastComponent!.ShowSuccessToast("Info", response.Message);
+        }
+        else
+        {
+            await ToastComponent!.ShowErrorToast("Alert", response.Message);
+        }
+    }
+
+    async Task GetOrders()
+    {
+        string userId = User!.Claims.FirstOrDefault(_ => _.Type == ClaimTypes.NameIdentifier)!.Value.ToString();
+        using var scope = serviceProvider.CreateScope();
+        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+        TemporalOrders = await mediator.Send(new GetAllOrdersQuery(userId));
+        PermanentOrders = TemporalOrders;
+    }
+
+    private List<string> OrderStates = [$"{OrderState.Processing}", $"{OrderState.Delivered}", $"{OrderState.Delivering}"];
+    void OrderStateSelectionChanged(Microsoft.AspNetCore.Components.ChangeEventArgs e) => UpdateOrderModel!.OrderState = e.Value!.ToString()!;
+   
+    
+
+    public void Dispose() => homeGenericState.StateChanged -= StateButtonClicked;
+
+}
