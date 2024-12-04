@@ -1,0 +1,94 @@
+﻿@page "/app/home"
+@using Application.DTO.Request.ActivityTracker
+@using Microsoft.AspNetCore.SignalR.Client
+@using NetcodeHub.Packages.UI.Templates.Breeze
+@using System.Security.Claims
+@using WebUI.Components.Pages.General
+@using WebUI.States.Administration
+@inject GenericHomeHeaderState homeGenericState
+@inject AdminActiveOrderCountState adminActiveOrderCountState
+@rendermode InteractiveServer
+@implements IDisposable
+@attribute [Authorize]
+<PageTitle >
+    Home
+</PageTitle>
+
+<HomeTeplate ActivateFooterTemplate=true
+             ActivateHomeSection1Col9Template=true
+             ActivateHomeSection1Col3Template=true
+             ActivateHomeHeaderTemplate="true">
+    <HomeHeaderTemplate>
+        <AuthorizeView Policy="AdministrationPolicy">
+            <AdminHomeHeader/>
+        </AuthorizeView>
+        <AuthorizeView Policy="UserPolicy">
+            <ClientHomeHeader/>
+        </AuthorizeView>
+    </HomeHeaderTemplate>
+    <HomeSection1Col9Template><HomePageGraph/></HomeSection1Col9Template>
+    <HomeSection1Col3Template><Banner/></HomeSection1Col3Template>
+    <FooterTemplate><Footer /></FooterTemplate>
+
+</HomeTeplate>
+@code {
+    [CascadingParameter] public Task<AuthenticationState>? authenticationState { get; set; }
+    private HubConnection? hubConnection;
+    protected async override Task OnInitializedAsync()
+    {
+        homeGenericState.StateChanged += StateHasChanged;
+        hubConnection = netcodeHubConnectionService.GetHubConnection();
+        hubConnection.On<string>("Notify", async (clientId) =>
+        {
+            await CallWhenNotified();
+        });
+        if(hubConnection==null)
+        {
+            await hubConnection.StartAsync();
+        }
+    }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            string state = await LocalStorageService.GetEncryptedItemAsStringAsync("reload");
+            if(string.IsNullOrEmpty(state))
+            {
+                await localStorageService.SaveAsEncryptedStringAsync("reload", false);
+                NavManager.NavigateTo("/app/home", true);
+            }
+            else{
+                await localStorageService.DeleteItemAsync("reload");
+            }
+        }
+    }
+    async Task CallWhenNotified()
+    {
+        await InvokeAsync(async () =>
+        {
+            StateHasChanged();
+            await adminActiveOrderCountState.GetActiveOrderCount();
+        });
+    }
+    void StateButtonClicked()
+    {
+        string adminOrderUrl = "app/administration/products/orders";
+        string clientOrderUrl = "app/products/orders";
+        if(!homeGenericState.IsAdmin)
+        {
+            NavManager.NavigateTo($"{clientOrderUrl}/{homeGenericState.StateName}");
+
+        }
+        else
+        {
+            NavManager.NavigateTo($"{adminOrderUrl}/{homeGenericState.StateName}");
+        }
+    }
+
+    public void Dispose()
+    {
+        homeGenericState.StateChanged -= StateHasChanged;
+
+    }
+}

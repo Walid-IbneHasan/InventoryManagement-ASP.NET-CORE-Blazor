@@ -1,0 +1,10 @@
+﻿<button class="btn @ButtonClass float-end" type="button" disabled>
+    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    <span role="status">@Text</span>
+</button>
+
+@code {
+    [Parameter] public string Text { get; set; } = "Loading...";
+    [Parameter] public string ButtonClass { get; set; }= "btn-primary"; 
+
+}

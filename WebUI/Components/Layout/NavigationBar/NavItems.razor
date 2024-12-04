@@ -1,0 +1,38 @@
+﻿@using System.Security.Claims
+<li class="nav-item nav-profile dropdown border-0">
+    <a class="nav-link dropdown-toggle" id="profileDropdown" href="#" data-toggle="dropdown">
+        <i class="mdi mdi-account-circle nav-profile-img mr-2 text-light"></i>
+        <span class="profile-name">@Name</span>
+    </a>
+    <div class="dropdown-menu navbar-dropdown w-100" aria-labelledby="profileDropdown">
+        <a class="dropdown-item">
+            <form action="Account/Logout" method="post" class="mb-2">
+                <AntiforgeryToken/>
+                <button type="submit" class="nav-link fw-bold text-danger">
+                    <i class="bi bi-box-arrow-right text-danger"></i>Logout
+                </button>
+
+            </form>
+
+        </a>
+
+    </div>
+
+</li>
+
+@code {
+    [CascadingParameter] public Task<AuthenticationState> UserState { get; set; }
+    string? Name;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Name = (await UserState!).User.Claims.FirstOrDefault(_ => _.Type == "Name")!.Value;
+        }
+        catch (Exception)
+        {
+            Name = "User";
+        }
+    }
+
+}
