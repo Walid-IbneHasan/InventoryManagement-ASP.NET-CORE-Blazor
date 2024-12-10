@@ -1,4 +1,14 @@
-﻿
+﻿@inject NavigationManager NavManager
+@inject AuthenticationStateProvider AuthState
+@inject ChangePasswordState passwordState
+@inject NetcodeHubConnectionService netcodeHubConnectionService
+@inject IAccountService accountService
+@inject IServiceProvider serviceProvider
+@inject IJSRuntime js
+@inject GenericHomeHeaderState homeGenericHeaderState
+@inject UserActiveOrderCountState userActiveOrderCountState
+@inject AdminActiveOrderCountState adminActiveOrderCountState
+@inject ICustomAuthorizationService customAuthorizationService
 <Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
         <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">

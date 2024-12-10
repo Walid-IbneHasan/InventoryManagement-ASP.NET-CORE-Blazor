@@ -1,7 +1,7 @@
 ﻿using Application.Service.Orders.Queries;
 using MediatR;
 
-namespace WebUI.States.Administration
+namespace WebUI.States.User
 {
     public class UserActiveOrderCountState(IServiceProvider serviceProvider)
     {

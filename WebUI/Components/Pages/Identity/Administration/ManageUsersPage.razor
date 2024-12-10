@@ -1,5 +1,10 @@
 ﻿@page "administration/account/users/manage"
 @rendermode InteractiveServer
+@inject IAccountService accountService
+@inject GenericHomeHeaderState homeGenericState
+@inject AdminActiveOrderCountState adminActiveOrderCountState
+@layout MainLayout
+@attribute [Authorize(Policy = "AdministrationPolicy")]
 <PageTitle>Manage Users </PageTitle>
 
 <TwoSectionsTemplate>
@@ -217,18 +222,20 @@
 
     };
     public bool IsOpen { get; set; }
-    void OpenModal => IsOpen = true;
+    void OpenModal() => IsOpen = true;
     ChangeUserClaimRequestDTO ChangeUserClaims = new();
     NetcodeHubToast? ToastComponent;
     private HubConnection? hubConnection;
     [CascadingParameter] public Task<AuthenticationState>? UserAuthState { get; set; }
-    List<string> Roles = new List<string>();
+    private List<string> Roles = new()
     {
-    new string(Policy.RoleClaim.Admin),
-    new string (Policy.RoleClaim.User),
-    new string (Policy.RoleClaim.Manager),
+    Policy.RoleClaim.Admin,
+    Policy.RoleClaim.User,
+    Policy.RoleClaim.Manager,
     };
-    private IEnumerable<GetUserWithClaimResponseDTO> getUsers = [];
+
+    private IEnumerable<GetUserWithClaimResponseDTO> Users = Enumerable.Empty<GetUserWithClaimResponseDTO>();
+
     private GetUserWithClaimsResponseDTO UserWithClaimsResponseDTO = new();
     private bool Loading = false;
     protected async override Task OnInitializedAsync()

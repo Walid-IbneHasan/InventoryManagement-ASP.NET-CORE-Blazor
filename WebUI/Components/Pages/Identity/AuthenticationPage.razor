@@ -1,4 +1,7 @@
 ﻿@page "/"
+@layout AuthenticationLayout
+@inject IAccountService accountService
+@inject NavigationManager NavManager
 @code{
     [CascadingParameter]
     public Task<AuthenticationState>? ClientAuthState { get; set; }

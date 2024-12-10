@@ -5,12 +5,12 @@
 
 <ThreeSectionsTemplate>
     <Col9Template>
-        <AdminHomeHeader/>
+        <AdminHomeHeader />
         <NetcodeHubBreadCrumb BreadCrumbs="BreadCrumbs" BackgroundColor="@BreadCrumbBackgroundColor.InfoSubtle()" />
-        <div class="card col-xl-10 col-lg-12 bg-light shadow-lg border-0 mt-3 " style="border-radius:24px">
+        <div class="card col-xl-10 col-lg-12 bg-light shadow-lg border-0 mt-3" style="border-radius:24px">
             <div class="card-body bg-light">
                 <EditForm Model="UserModel" OnValidSubmit="RegisterAsync">
-                    <div class="card border-success bg-light shadow-lg text-dark" style="opacity:0.8;border-radius:24px">
+                    <div class="card border-success bg-light shadow-lg text-dark" style="opacity:0.8; border-radius:24px">
                         <div class="card-header text-dark fs-4 border-primary text-center">
                             <i class="mdi mdi-account-plus menu-icon float-start text-success"></i>
                             <span style="font-family:Algerian; letter-spacing:2px;" class="fw-bold text-success">Add New User</span>
@@ -18,47 +18,52 @@
                         </div>
                         <div class="card-body p-3" style="opacity:1">
                             <DataAnnotationsValidator />
-                            <FloatingText class="form-control mb-3" Label="Full Name" Placeholder="John" @bind-Value="UserModel.Name"/>
+                            <FloatingText class="form-control mb-3" Label="Full Name" Placeholder="John" @bind-Value="UserModel.Name" />
                             <FloatingText class="form-control mb-3" Label="Email Address" Placeholder="Johndoe@gmail.com" @bind-Value="UserModel.Email" />
                             <InputSelect @bind-Value="UserModel.Policy" class="form-select mb-3">
                                 <option>Select Policy</option>
                                 @foreach (var policy in Policies)
                                 {
-                                <option value="@policy">@policy</option>
+                                    <option value="@policy">@policy</option>
                                 }
-
                             </InputSelect>
-                            <FloatingText  Label="User Password" Type="@passwordState.PasswordType" class="form-control" @bind-Value="UserModel.Password" />
+                            <FloatingText Label="User Password" Type="@passwordState.PasswordType" class="form-control" @bind-Value="UserModel.Password" />
                             <FloatingText Label="Confirm Password" Type="@passwordState.PasswordType" class="form-control" @bind-Value="UserModel.ConfirmPassword" />
-                            <a class="btn btn-link text-decoration-none float-end" style="margin-top:-20px"onclick="ChangePasswordType"> <small>@passwordState.DisplayText</small> </a>
+                            <a class="btn btn-link text-decoration-none float-end" style="margin-top:-20px" @onclick="ChangePasswordType">
+                                <small>@passwordState.DisplayText</small>
+                            </a>
                             <div class="form-group align-content-end">
-                                @if(Loading)
+                                @if (Loading)
                                 {
-                                <GenericSpinnerButton ButtonClass="btn btn-success w-50 mt-4 float-end" Text="Creating..."
+                                    <GenericSpinnerButton ButtonClass="btn btn-success w-50 mt-4 float-end" Text="Creating..." />
                                 }
                                 else
                                 {
-                                    <button class="float-end btn btn-success mt-4 w-50" type="submit"> Create User</button>
-                                    }
-                                    </div>
-                                <hr class="text-primary"/>
-                                </div>
-                                <div class="card-footer mt-5">
-                                    <ValidationSummary class="form-control text-danger text-decoration-none p-4" style="list-style:lower-latin; text-align:left"/>
-                                </div>
-                                </div>
-                                </EditForm>
-                                </div>
-                                </div>
-                                </Col9Template>
-                                <Col3Template><Banner/></Col3Template>
-                                <FooterTemplate><Footer/></FooterTemplate>
-                                </ThreeSectionsTemplate>
+                                    <button class="float-end btn btn-success mt-4 w-50" type="submit">Create User</button>
+                                }
+                            </div>
+                            <hr class="text-primary" />
+                        </div>
+                        <div class="card-footer mt-5">
+                            <ValidationSummary class="form-control text-danger text-decoration-none p-4" style="list-style:lower-latin; text-align:left" />
+                        </div>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </Col9Template>
+    <Col3Template>
+        <Banner />
+    </Col3Template>
+    <FooterTemplate>
+        <Footer />
+    </FooterTemplate>
+</ThreeSectionsTemplate>
 
-                                <NetcodeHubToast @ref="ToastComponent" Duration="4000"/>
 
-                                @code {
-                                    private Dictionary<string, string> BreadCrumbs = new Dictionary<string, string>
+<NetcodeHubToast @ref="ToastComponent" Duration="4000"/>
+@code {
+    private Dictionary<string, string> BreadCrumbs = new Dictionary<string, string>
     {
         {"Home","app/home"}
         {"Add New User",null!}

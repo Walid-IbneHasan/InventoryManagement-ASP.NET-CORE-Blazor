@@ -8,6 +8,6 @@ using System.Threading.Tasks;
 
 namespace Application.Service.Orders.Queries
 {
-    public record GetGenericOrdersCountQuery(string UserId,bool IsAdmin=false):IRequest<IEnumerable<GetOrdersCountResponseDTO>>;
+    public record GetGenericOrdersCountQuery(string UserId,bool IsAdmin=false):IRequest<GetOrdersCountResponseDTO>;
     
 }

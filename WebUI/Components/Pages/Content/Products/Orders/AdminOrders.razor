@@ -270,25 +270,25 @@
         });
     }
 
-    protected override void Task OnParametersSet()
+    protected override async Task OnParametersSet()
     {
         if (string.IsNullOrEmpty(OrderStateParam) || !homeGenericState.IsAdmin)
             return;
         else
-            StateGeneralMethod();
+            await StateGeneralMethod();
     }
 
-    void StateButtonClicked()
+    async Task StateButtonClicked()
     {
         OrderStateParam = string.Empty;
         var updateUrlTask = Task.Run(async () => await js.InvokeVoidAsync("update url", "app/administration/products/orders"));
         string adminOrderUrl = "app/administration/products/orders";
         if (homeGenericState.IsAdmin)
-            StateGeneralMethod();
+            await StateGeneralMethod();
     }
 
 
-    void StateGeneralMethood()
+    void StateGeneralMethod()
     {
 
         string state = homeGenericState.StateName;

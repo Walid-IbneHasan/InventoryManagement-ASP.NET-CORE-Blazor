@@ -227,7 +227,7 @@
     [Parameter] public string Id { get; set; } = string.Empty;
     private GetProductResponseDTO Product { get; set; } = new();
 
-    protected async override Task OnParameterSetAsync()
+    protected async override Task OnParametersSetAsync()
     {
         homeGenericState.StateChanged += StateButtonClicked;
         if(Guid.Parse(Id)==Guid.Empty)
